@@ -25,6 +25,7 @@ import 'package:cw_core/crypto_amount_format.dart';
 import 'package:cw_core/crypto_currency.dart';
 import 'package:cw_core/currency_for_wallet_type.dart';
 import 'package:cw_core/format_fixed.dart';
+import 'package:cw_core/sync_status.dart';
 import 'package:cw_core/transaction_history.dart';
 import 'package:cw_core/transaction_info.dart';
 import 'package:cw_core/utils/print_verbose.dart';
@@ -54,8 +55,9 @@ abstract class OutputBase with Store {
         parsedAddress = ParsedAddress(addresses: []) {
     autorun((_) {
       final status = _wallet.syncStatus;
-      printV("Sync status changed to $status. Recalculating fees");
-
+      if (status is! SyncedSyncStatus) {
+        return;
+      }
       calculateEstimatedFee();
     });
   }
