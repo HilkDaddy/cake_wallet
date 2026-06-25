@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:cw_decred/api/libdcrwallet.dart';
 import 'package:cw_decred/wallet_creation_credentials.dart';
 import 'package:cw_decred/wallet.dart';
@@ -59,10 +60,15 @@ class DecredWalletService extends WalletService<
     await this.init();
     final dirPath = await pathForWalletDir(name: credentials.walletInfo!.name, type: getType());
     final network = isTestnet == true ? testnet : mainnet;
+    final strength = credentials.seedPhraseLength == 24 ? 256 : 128;
+    final mnemonic = bip39.generateMnemonic(strength: strength);
     final config = {
       "name": credentials.walletInfo!.name,
       "datadir": dirPath,
       "pass": credentials.password!,
+      "mnemonic": mnemonic,
+      "seedpass": credentials.passphrase ?? "",
+      "birthday": DateTime.now().millisecondsSinceEpoch ~/ 1000,
       "net": network,
       "unsyncedaddrs": true,
     };
@@ -210,6 +216,7 @@ class DecredWalletService extends WalletService<
       "datadir": dirPath,
       "pass": credentials.password!,
       "mnemonic": credentials.mnemonic,
+      "seedpass": credentials.passphrase ?? "",
       "net": network,
       "unsyncedaddrs": true,
     };
